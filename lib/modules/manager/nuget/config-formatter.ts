@@ -5,8 +5,8 @@ import { NugetDatasource } from '../../datasource/nuget';
 import { parseRegistryUrl } from '../../datasource/nuget/common';
 import type { ParsedRegistryUrl } from '../../datasource/nuget/types';
 import type {
-  PackageSourceCredential,
   PackageSourceApiKey,
+  PackageSourceCredential,
   PackageSourceMap,
   Registry,
 } from './types';
