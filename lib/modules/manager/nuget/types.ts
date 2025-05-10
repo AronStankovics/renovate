@@ -28,6 +28,11 @@ export interface PackageSourceCredential {
   readonly password: string | undefined;
 }
 
+export interface PackageSourceApiKey {
+  readonly host: string | undefined;
+  readonly key: string | undefined;
+}
+
 export interface PackageSourceMap {
   readonly name: string;
   readonly patterns: string[];

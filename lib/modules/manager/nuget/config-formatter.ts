@@ -6,6 +6,7 @@ import { parseRegistryUrl } from '../../datasource/nuget/common';
 import type { ParsedRegistryUrl } from '../../datasource/nuget/types';
 import type {
   PackageSourceCredential,
+  PackageSourceApiKey,
   PackageSourceMap,
   Registry,
 } from './types';
@@ -16,6 +17,7 @@ export function createNuGetConfigXml(registries: Registry[]): string {
 
   const credentials: PackageSourceCredential[] = [];
   const packageSourceMaps: PackageSourceMap[] = [];
+  const apiKeys: PackageSourceApiKey[] = [];
 
   for (const registry of registries) {
     const registryName =
@@ -24,7 +26,7 @@ export function createNuGetConfigXml(registries: Registry[]): string {
 
     contents += formatPackageSourceElement(registryInfo, registryName);
 
-    const { password, username } = hostRules.find({
+    const { password, username, token } = hostRules.find({
       hostType: NugetDatasource.id,
       url: registry.url,
     });
@@ -37,6 +39,13 @@ export function createNuGetConfigXml(registries: Registry[]): string {
       });
     }
 
+    if (is.nonEmptyString(token)) {
+      apiKeys.push({
+        host: registry.url,
+        key: token,
+      });
+    }
+
     if (registry.sourceMappedPackagePatterns) {
       packageSourceMaps.push({
         name: registryName,
@@ -46,6 +55,10 @@ export function createNuGetConfigXml(registries: Registry[]): string {
   }
 
   contents += '</packageSources>\n';
+
+  if (apiKeys.length > 0) {
+    contents += formatPackageSourceApiKeyElement(apiKeys);
+  }
 
   if (credentials.length > 0) {
     contents += '<packageSourceCredentials>\n';
@@ -103,6 +116,19 @@ function formatPackageSourceCredentialElement(
   packageSourceCredential += `</${escapedName}>\n`;
 
   return packageSourceCredential;
+}
+
+function formatPackageSourceApiKeyElement(
+  apiKeys: PackageSourceApiKey[],
+): string {
+  let packageSourceApiKey = '<apiKey>\n';
+
+  for (const apiKey of apiKeys) {
+    packageSourceApiKey += `<add key="${apiKey.host}" value="${apiKey.key}" />\n`;
+  }
+  packageSourceApiKey += '</apiKey>\n';
+
+  return packageSourceApiKey;
 }
 
 function formatPackageSource(packageSourceMap: PackageSourceMap): string {
